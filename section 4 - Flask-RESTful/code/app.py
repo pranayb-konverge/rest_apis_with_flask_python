@@ -14,6 +14,12 @@ jwt = JWT(app, authenticate, identity) # /auth
 items = []
 
 class Item(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument("price",
+        type=float,
+        required=True,
+        help="This field cannot be blank!"
+    )
     @jwt_required()
     def get(self, name):
         item = next(filter(lambda x: x["name"] == name, items), None)
@@ -23,7 +29,7 @@ class Item(Resource):
         if next(filter(lambda x: x["name"] == name, items), None):
             return {"message": f"An item with name '{name}' already exist."}, 400
         
-        request_data = request.get_json()
+        request_data = Item.parser.parse_args()
         price = request_data["price"]
         item = {"name":name, "price":price}
         items.append(item)
@@ -34,14 +40,8 @@ class Item(Resource):
         items = list(filter(lambda x: x["name"] != name, items))
         return {"message" : "Item Deleted!"}
     
-    def put(self, name):
-        parser = reqparse.RequestParser()
-        parser.add_argument("price",
-            type=float,
-            required=True,
-            help="This field cannot be blank!"
-        )
-        data = parser.parse_args()
+    def put(self, name):        
+        data = Item.parser.parse_args()
 
         # Once again, print something not in the args to verify everything works
         item = next(filter(lambda x: x["name"] == name, items), None)
