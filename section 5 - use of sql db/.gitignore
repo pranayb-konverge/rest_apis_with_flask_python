@@ -1,2 +1,4 @@
 code/__pycache__/
 venv
+test_db.py
+code/data.db

@@ -4,6 +4,7 @@ import uuid
 from flask_jwt import JWT, jwt_required
 
 from security import authenticate, identity
+from user import UserRegister
 
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4()) # make a random UUID
@@ -60,5 +61,6 @@ class ItemsList(Resource):
 
 api.add_resource(Item, '/item/<string:name>') 
 api.add_resource(ItemsList, '/items') 
+api.add_resource(UserRegister, '/register') # user registration route 
 
-app.run(port=5000)
+app.run(port=5000, debug=True)
