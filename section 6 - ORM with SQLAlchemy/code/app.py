@@ -4,8 +4,8 @@ import uuid
 from flask_jwt import JWT
 
 from security import authenticate, identity
-from user import UserRegister
-from item import Item, ItemsList
+from resources.user import UserRegister
+from resources.item import Item, ItemsList
 
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4()) # make a random UUID
