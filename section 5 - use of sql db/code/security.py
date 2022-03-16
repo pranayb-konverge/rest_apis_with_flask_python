@@ -1,7 +1,6 @@
 from user import User
 from hmac import compare_digest
 
-# in memory db
 users = [
     User(1,"admin", "admin"),
     User(2,"Pranay", "sanz")
