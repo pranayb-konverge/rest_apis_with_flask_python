@@ -1,23 +1,20 @@
 from db import db
 
 # Model class to interact with the database
-class ItemModel(db.Model):
-    __tablename__ = 'items'
+class StoreModel(db.Model):
+    __tablename__ = 'stores'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
-    price = db.Column(db.Float(precision=2))
-    # Applying the foreign key constrain to map the items to stores 
-    store_id = db.Column(db.Integer, db.ForeignKey('stores.id'))
-    store = db.relationship('StoreModel')
+    # create relationsship between the stores and items let the relationship
+    # be lazy so it will not create object for each item.
+    items = db.relationship('ItemModel', lazy='dynamic')
 
-    def __init__(self, name, price, store_id):
+    def __init__(self, name):
         self.name = name
-        self.price = price
-        self.store_id = store_id
 
     def json(self):
-        return {"name": self.name, "price":self.price}
+        return {"name": self.name, "items":[item.json() for item in self.items.all()]}
 
      # this method will fetch the item by name from db table
     @classmethod

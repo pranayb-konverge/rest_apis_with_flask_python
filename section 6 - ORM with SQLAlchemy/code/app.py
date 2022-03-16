@@ -6,6 +6,7 @@ from flask_jwt import JWT
 from security import authenticate, identity
 from resources.user import UserRegister
 from resources.item import Item, ItemsList
+from resources.store import Store, StoreList
 
 app = Flask(__name__)
 # Let the SQLAlchemy know where to find the db file
@@ -15,11 +16,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
 app.secret_key = str(uuid.uuid4()) # make a random UUID
 api = Api(app)
 
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
 jwt = JWT(app, authenticate, identity) # /auth
 
 api.add_resource(Item, '/item/<string:name>') 
 api.add_resource(ItemsList, '/items') 
 api.add_resource(UserRegister, '/register') # user registration route 
+api.add_resource(StoreList, '/stores')
+api.add_resource(Store, '/store/<string:name>')
 
 
 if __name__ == "__main__":

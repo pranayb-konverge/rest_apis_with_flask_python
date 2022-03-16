@@ -13,6 +13,11 @@ class Item(Resource):
         required=True,
         help="Price field cannot be blank!"
     )
+    parser.add_argument("store_id",
+        type=int,
+        required=True,
+        help="Every Item needs a store id."
+    )
 
     @jwt_required() # this method requires the JWT token
     def get(self, name):
@@ -28,7 +33,7 @@ class Item(Resource):
         # using the parser object we will collect the data
         data = Item.parser.parse_args()
         # here we are accesing the ItemModel class to create the item
-        item = ItemModel(name, data['price'])
+        item = ItemModel(name, **data)
 
         try:
             # using the object of the ItemModel class we will insert the data
@@ -54,6 +59,7 @@ class Item(Resource):
         
         if item:
             item.price = data['price']
+            item.store_id = data['store_id']
         else:
             item = ItemModel(name, **data)
         
