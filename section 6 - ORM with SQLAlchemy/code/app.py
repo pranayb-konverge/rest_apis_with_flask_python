@@ -8,6 +8,8 @@ from resources.user import UserRegister
 from resources.item import Item, ItemsList
 
 app = Flask(__name__)
+# turn off Falsk SQLAlchemy modification tracker but not he SQLAlchemy one.
+app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
 app.secret_key = str(uuid.uuid4()) # make a random UUID
 api = Api(app)
 
@@ -17,4 +19,10 @@ api.add_resource(Item, '/item/<string:name>')
 api.add_resource(ItemsList, '/items') 
 api.add_resource(UserRegister, '/register') # user registration route 
 
-app.run(port=5000, debug=True)
+
+if __name__ == "__main__":
+    # to aviod circular imports as the models will also consume db, we need to aviod 
+    # consumption of db by models and vice-versa 
+    from db import db
+    db.init_app(app)
+    app.run(port=5000, debug=True)
