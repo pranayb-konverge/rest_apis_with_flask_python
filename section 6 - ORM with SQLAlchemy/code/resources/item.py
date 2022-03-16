@@ -1,6 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
+from models.item import ItemModel
 
 class Item(Resource):
     TABLE_NAME = 'items'
@@ -13,65 +14,29 @@ class Item(Resource):
         help="This field cannot be blank!"
     )
 
-    # this method will fetch the item by name from db table
-    @classmethod
-    def find_by_name(cls, name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "SELECT * FROM {table} WHERE name=?".format(table=cls.TABLE_NAME)
-        result = cursor.execute(query, (name,))
-        row = result.fetchone()
-        connection.close()
-        
-        if row:
-            return {'item': {'name': row[0], 'price': row[1]}}
-    
-    # this method will insert new item in the db table
-    @classmethod
-    def insert(cls, item):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "INSERT INTO {table} VALUES(?, ?)".format(table=cls.TABLE_NAME)
-        cursor.execute(query, (item['name'], item['price']))
-
-        connection.commit()
-        connection.close()
-    
-    # this method will update the exisitng item record
-    @classmethod
-    def update(cls, item):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "UPDATE {table} SET price=? WHERE name=?".format(table=cls.TABLE_NAME)
-        cursor.execute(query, (item['price'], item['name']))
-
-        connection.commit()
-        connection.close()
-
     @jwt_required() # this method requires the JWT token
     def get(self, name):
-        item = self.find_by_name(name)
+        item = ItemModel.find_by_name(name)
         if item:
-            return item
+            return item.json()
         return {'message': 'Item not found'}, 404
 
     def post(self, name):
-        if self.find_by_name(name):
+        if ItemModel.find_by_name(name):
             return {'message': "An item with name '{}' already exists.".format(name)}
         
         # using the parser object we will collect the data
         data = Item.parser.parse_args()
-        item = {'name': name, 'price': data['price']}
+        # here we are accesing the ItemModel class to create the item
+        item = ItemModel(name, data['price'])
 
         try:
-            Item.insert(item)
+            # using the object of the ItemModel class we will insert the data
+            item.insert()
         except:
             return {"message": "An error occurred inserting the item."}
 
-        return item
+        return item.json()
 
     # delete the item by name
     @jwt_required()
@@ -89,19 +54,22 @@ class Item(Resource):
     
     def put(self, name):        
         data = Item.parser.parse_args()
-        item = self.find_by_name(name)
-        updated_item = {'name': name, 'price': data['price']}
+        # existing item we got from the db
+        item = ItemModel.find_by_name(name)        
+        # new item we got from the User
+        updated_item = ItemModel(name, data['price'])
         if item is None:
             try:
-                Item.insert(updated_item)
+                updated_item.insert()
             except:
-                return {"message": "An error occurred inserting the item."}
+                return {"message": "An error occurred inserting the item."}, 500
         else:
             try:
-                Item.update(updated_item)
+                updated_item.update()
             except:
-                return {"message": "An error occurred updating the item."}
-        return updated_item
+                return {"message": "An error occurred updating the item."}, 500
+        return updated_item.json()
+
 
 class ItemsList(Resource):
     TABLE_NAME = 'items'
