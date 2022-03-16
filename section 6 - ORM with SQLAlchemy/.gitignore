@@ -1,6 +1,5 @@
-code/__pycache__/
-code/models/__pycache__/
-code/resources/__pycache__/
+.DS_Store
+__pycache__
+*.pyc
 venv
-test_db.py
-code/data.db
+*.db
